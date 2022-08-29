@@ -23,6 +23,8 @@ extra-source-files: README.md
 
 library
     exposed-modules:  Dragon
+                      , Dragon.Lexer
+                      , Dragon.Token
 
     -- Modules included in this library but not exported.
     -- other-modules:
