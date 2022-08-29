@@ -5,8 +5,10 @@ import Data.Maybe (fromMaybe)
 import Dragon.Lexer (newLexer, tokens)
 import Options.Applicative (
   Parser,
+  ParserResult (..),
   argument,
-  execParser,
+  defaultPrefs,
+  execParserPure,
   fullDesc,
   header,
   help,
@@ -69,14 +71,17 @@ slurpFile path = do
   hGetContents fh
 
 run :: [String] -> IO ()
-run args = do
-  rawOpts <- execParser opts
-  let opts = options rawOpts
-   in do
-        contents <- slurpFile (optInput opts)
-        let lexer = newLexer contents (optInput opts)
-         in putStrLn (map show (tokens lexer) & unlines)
-        return ()
+run args =
+  let rawOpts = case execParserPure defaultPrefs opts args of
+        Success a -> a
+        Failure f -> error (show f)
+        CompletionInvoked _ -> error "Completion invoked"
+   in let opts = options rawOpts
+       in do
+            contents <- slurpFile (optInput opts)
+            let lexer = newLexer contents (optInput opts)
+             in putStrLn (map show (tokens lexer) & unlines)
+            return ()
   where
     opts =
       info
